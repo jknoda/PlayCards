@@ -11,6 +11,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
 {
     [SerializeField]
     private Text _msg;
+
     [SerializeField]
     private Text _duplaText;
     [SerializeField]
