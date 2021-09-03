@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - CARTA
+  - JOGADOR01
+  - JOGADOR02
+  - JOGADOR03
+  - JOGADOR04
+  - JOGADA01
+  - JOGADA02
+  - MORTO01
+  - MORTO02
+  - AREAJOGO
+  - LIXO
+  - CLICKJOGADA
+  - BARALHO
+  - PANELPLACAR
+  - PAINELMSG
+  - ZPAINELMSG
+  - CARTALIXO
+  - OBJMOV
+  - MSGPOS
+  - CHATDIREITA
+  - CHATESQUERDA
+  - CHATDIREITABAIXO
+  - CHATESQUERDABAIXO
+  - CHATVIEW
+  - MESA
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - 
+  - 
+  - 
+  - 
+  - clickJogada
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
