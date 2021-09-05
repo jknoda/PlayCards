@@ -1139,6 +1139,7 @@ public class GameRules : MonoBehaviourPunCallbacks
         }
         else if (jogador.GetComponent<Jogador>().PegouLixo && jogador.GetComponent<Jogador>().QdeCartasNoLixo == 1 && jogador.GetComponent<Jogador>().IdCartaLixo == idCarta && !GameCardsManager.Instancia.IsBot())
         {
+            jogador.GetComponent<Jogador>().PegouLixo = false;
             GameManager.Instancia.MostraMsgMain("Lixo devolvido, puxe uma carta", false, "suaVez", false, 0);
             return 2;
         }
