@@ -345,17 +345,17 @@ public class FrontManager : MonoBehaviourPunCallbacks
                 }
             }
             x += xStepSalto;
-            int qdeCutucar = 1;
+            float qdeCutucar = 0;
+            bool trocaCanastra = false; // troca canastra por RL ou RS para estatistica
             if (ultimaCarta != null)
             {
                 switch (tipoCanastra)
                 {
                     case "AS":
-                        qdeCutucar = 3;
                         ultimaCarta.GetComponent<Carta>().Cor = GestorDeRede.Instancia.GetCor("AS"); // new Color(1f, 0.8f, 0.8f);
                         break;
                     case "AL":
-                        qdeCutucar = 5;
+                        qdeCutucar = 1.5f;
                         if (jogadaAtual && !played)
                         {
                             jogadaAtual = false;
@@ -366,11 +366,10 @@ public class FrontManager : MonoBehaviourPunCallbacks
                         ultimaCarta.GetComponent<Carta>().Cor = GestorDeRede.Instancia.GetCor("AL"); // new Color(0.839f, 0.960f, 0.839f);
                         break;
                     case "CS":
-                        qdeCutucar = 1;
                         ultimaCarta.GetComponent<Carta>().Cor = GestorDeRede.Instancia.GetCor("CS"); // new Color(1f, 0.6f, 0.6f);
                         break;
                     case "CL":
-                        qdeCutucar = 3;
+                        qdeCutucar = 1;
                         ultimaCarta.GetComponent<Carta>().Cor = GestorDeRede.Instancia.GetCor("CL"); // new Color(0.6f, 1f, 0.6f);
                         break;
                     case "RS":
@@ -379,9 +378,10 @@ public class FrontManager : MonoBehaviourPunCallbacks
                             jogadaAtual = false;
                             SoundManager.Instancia.PlaySound("asAs");
                             GameCardsManager.Instancia.FogosOn();
+                            trocaCanastra = true;
                             BotManager.Instancia.FezCanastra(actorNumber, tipoCanastra);
+                            qdeCutucar = 1.5f;
                         }
-                        qdeCutucar = 5;
                         ultimaCarta.GetComponent<Carta>().Cor = GestorDeRede.Instancia.GetCor("RS"); // new Color(0.901f, 0.6f, 1f);
                         break;
                     case "RL":
@@ -390,8 +390,9 @@ public class FrontManager : MonoBehaviourPunCallbacks
                             jogadaAtual = false;
                             SoundManager.Instancia.PlaySound("asAs");
                             GameCardsManager.Instancia.FogosOn();
+                            trocaCanastra = true;
                             BotManager.Instancia.FezCanastra(actorNumber, tipoCanastra);
-                            qdeCutucar = 10;
+                            qdeCutucar = 2;
                         }
                         ultimaCarta.GetComponent<Carta>().Cor = GestorDeRede.Instancia.GetCor("RL"); // new Color(0.6f, 0.6f, 1f);
                         break;
@@ -399,10 +400,13 @@ public class FrontManager : MonoBehaviourPunCallbacks
 
                 if (!string.IsNullOrEmpty(tipoCanastra))
                 {
+                    if (!played || trocaCanastra)
+                    {
+                        GestorDeRede.Instancia.SetDadosRodada(actorNumber, GameCardsManager.Instancia.GetDupla(actorNumber), tipoCanastra.ToLower(), 1);
+                    }
                     ultimaCarta.GetComponent<Carta>().MostraCarta(true); // ultimaCarta.GetComponent<Carta>().Nome);
                     if (jogadaAtual && !played)
                     {
-                        qdeCutucar = 0;
                         SoundManager.Instancia.PlaySound("canastra");
                         BotManager.Instancia.FezCanastra(actorNumber, tipoCanastra);
                         GameManager.Instancia.PodeCutucar(qdeCutucar, actorNumber);

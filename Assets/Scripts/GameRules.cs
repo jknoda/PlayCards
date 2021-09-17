@@ -238,7 +238,7 @@ public class GameRules : MonoBehaviourPunCallbacks
             {
                 if (fimRodada)
                 {
-                    if (GameCardsManager.Instancia.GetPlacar().Item1 >= 3000 || GameCardsManager.Instancia.GetPlacar().Item2 > 3000)
+                    if (GameCardsManager.Instancia.GetPlacar().Item1 >= 3000 || GameCardsManager.Instancia.GetPlacar().Item2 >= 3000)
                     {
                         Final(GameCardsManager.Instancia.GetPlacar().Item1, GameCardsManager.Instancia.GetPlacar().Item2);
                     }
@@ -413,6 +413,19 @@ public class GameRules : MonoBehaviourPunCallbacks
                 {
                     if (pontos >= GameCardsManager.Instancia.GetVulPontos(actorNumber))
                     {
+                        #region Controle estatistica vul
+                        int dup = GameCardsManager.Instancia.GetDupla(actorNumber);
+                        bool dupJaBaixou = false;
+                        if (dup == 1 && GestorDeRede.Instancia.VulOkA)
+                            dupJaBaixou = true;
+                        if (dup == 2 && GestorDeRede.Instancia.VulOkB)
+                            dupJaBaixou = true;
+                        if (!dupJaBaixou)
+                        {
+                            GestorDeRede.Instancia.SetVulOk(dup, actorNumber, pontos, true);
+                        }
+                        #endregion Controle estatistica vul
+
                         ret = true;
                         msg = "";
                     }
@@ -437,6 +450,11 @@ public class GameRules : MonoBehaviourPunCallbacks
 
     public void Totalizar(int actorBateu)
     {
+        int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
+        if (actorBateu != 0)
+            localActor = actorBateu;
+        GestorDeRede.Instancia.SetDadosRodada(localActor, GameCardsManager.Instancia.GetDupla(localActor), "batida", localActor);
+
         GameCardsManager.Instancia.SetJogadaFinalizada(true);
 
         string msgResultado = "FINAL DA RODADA";
@@ -525,11 +543,24 @@ public class GameRules : MonoBehaviourPunCallbacks
             pontos02 += 5;
         }
 
+        GestorDeRede.Instancia.SetDadosRodada(localActor, 1, "pto", saida01 + jogada01);
+        GestorDeRede.Instancia.SetDadosRodada(localActor, 2, "pto", saida02 + jogada02);
+
         string pt01Aux = placarDet.Item1 + saida01.ToString("##,##0") + "\n" + jogada01.ToString("##,##0") + "\n" + "--------\n" + pontos01.ToString("##,##0") + "\n";
         string pt02Aux = placarDet.Item2 + saida02.ToString("##,##0") + "\n" + jogada02.ToString("##,##0") + "\n" + "--------\n" + pontos02.ToString("##,##0") + "\n";
 
         GestorDeRede.Instancia.SetPlacarDet(pt01Aux, pt02Aux);
         GestorDeRede.Instancia.SetPlacar(pontos01, pontos02);
+
+        if (pontos01 >= 3000 || pontos02 >= 3000)
+        {
+            GestorDeRede.Instancia.SetFimRodada(localActor, GestorDeRede.Instancia.MsgHistorico);
+        }
+        else
+        {
+            GestorDeRede.Instancia.CriarRodada(localActor);
+        }
+
         GameCardsManager.Instancia.SetFimRodada();
         GameCardsManager.Instancia.SetGameRecall();
     }
@@ -885,6 +916,7 @@ public class GameRules : MonoBehaviourPunCallbacks
                 }
                 else
                 {
+                    GestorDeRede.Instancia.SetDadosRodada(localActor, GameCardsManager.Instancia.GetDupla(localActor), "morto", localActor);
                     GameCardsManager.Instancia.SetPegueiMorto(localActor);
                     Baralho.Instancia.LimparSelecionados();
                     GameCardsManager.Instancia.GetListaCartasJogo().Where(x => x.Portador == portadorInicioDrag).ToList()
@@ -1693,7 +1725,7 @@ public class GameRules : MonoBehaviourPunCallbacks
         SoundManager.Instancia.PlaySound("finalizar");
         if (GameCardsManager.Instancia.GetEhFimRodada())
         {
-            if (GameCardsManager.Instancia.GetPlacar().Item1 >= 3000 || GameCardsManager.Instancia.GetPlacar().Item2 > 3000)
+            if (GameCardsManager.Instancia.GetPlacar().Item1 >= 3000 || GameCardsManager.Instancia.GetPlacar().Item2 >= 3000)
                 MsgFinalizar(true, "");
             else
                 MsgFinalizar(false, "");
@@ -1718,7 +1750,7 @@ public class GameRules : MonoBehaviourPunCallbacks
                         if (msgFim == "OK")
                         {
                             GameRules.Instancia.Totalizar(0);
-                            if (GameCardsManager.Instancia.GetPlacar().Item1 >= 3000 || GameCardsManager.Instancia.GetPlacar().Item2 > 3000)
+                            if (GameCardsManager.Instancia.GetPlacar().Item1 >= 3000 || GameCardsManager.Instancia.GetPlacar().Item2 >= 3000)
                             {
                                 Final(GameCardsManager.Instancia.GetPlacar().Item1, GameCardsManager.Instancia.GetPlacar().Item2);
                             }
@@ -1767,6 +1799,7 @@ public class GameRules : MonoBehaviourPunCallbacks
 
         if (GameCardsManager.Instancia.GetPlacar().Item1 >= 3000 || GameCardsManager.Instancia.GetPlacar().Item2 >= 3000)
         {
+            GestorDeRede.Instancia.CriarGame(localActor);
             GestorDeRede.Instancia.SetPlacar(0, 0, true);
             GestorDeRede.Instancia.ComecaJogo("Principal", false);
         }

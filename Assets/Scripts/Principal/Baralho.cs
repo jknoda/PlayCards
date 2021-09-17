@@ -84,17 +84,28 @@ public class Baralho : MonoBehaviourPunCallbacks
         if (recall)
         {
             GameCardsManager.Instancia.GetGameRecall(PhotonNetwork.CurrentRoom.Name);
-            baralho = GerarCartasRecall();
-            GestorDeRede.Instancia.Recall = false;
+            //baralho = GerarCartasRecall();
+            //GestorDeRede.Instancia.Recall = false;
         }
         else
         {
             baralho = CriarCartas(2);
+            this.cartasAPI = JsonUtility.ToJson(baralho);
+            GerarBaralho(this.cartasAPI, recall);
         }
 
-        this.cartasAPI = JsonUtility.ToJson(baralho);
-        GerarBaralho(this.cartasAPI, recall);
+        //this.cartasAPI = JsonUtility.ToJson(baralho);
+        //GerarBaralho(this.cartasAPI, recall);
     }
+
+    public void GerarCartasCB()
+    {
+        ListaCartas baralho = GerarCartasRecall();
+        GestorDeRede.Instancia.Recall = false;
+        this.cartasAPI = JsonUtility.ToJson(baralho);
+        GerarBaralho(this.cartasAPI, true);
+    }
+
 
     #region GerarCartas
     /// <summary>

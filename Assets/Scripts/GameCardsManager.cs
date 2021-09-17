@@ -2,10 +2,12 @@ using Newtonsoft.Json;
 using Photon.Pun;
 using Photon.Realtime;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public class GameCardsManager : MonoBehaviourPunCallbacks
@@ -179,6 +181,11 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
                 _msg.GetComponent<Text>().text = "";
                 if (GameManager.Instancia != null)
                 {
+                    if (GestorDeRede.Instancia.InicialOk == 0)
+                    {
+                        //GestorDeRede.Instancia.InicialOk = jogadorAtual;
+                        GestorDeRede.Instancia.SetInicialOk(jogadorAtual);
+                    }
                     GameManager.Instancia.MostraMsgMain("SUA VEZ DE JOGAR", false, "suaVez", false, 0);
                     if (GameCardsManager.Instancia.IsBot())
                     {
@@ -1398,7 +1405,22 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         if ((int)PhotonNetwork.LocalPlayer.CustomProperties["ID"] > 4)
             return;
         if (!GestorDeRede.Instancia.Recall)
+        {
+            // gravar dados em tabela
+            int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
+            string saveGame = SetGameRecallCPL(localActor, false);
+            if (!string.IsNullOrEmpty(saveGame))
+            {
+                int sala = Convert.ToInt32(PhotonNetwork.CurrentRoom.Name.Substring(4, 2));
+                WWWForm form = new WWWForm();
+                form.AddField("sala", sala);
+                form.AddField("dados", saveGame);
+                form.AddField("jogador", localActor);
+                StartCoroutine(Post("/oapi/play/update", form, false, 0, ""));
+            }
+
             photonView.RPC("SetGameRecallRPC", RpcTarget.All);
+        }
     }
 
     [PunRPC]
@@ -1435,6 +1457,11 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         SaveGame SG = new SaveGame
         {
             // GestorDeRedes
+            GameIdf = GestorDeRede.Instancia.GameIdf,
+            GameRodada = GestorDeRede.Instancia.GameRodada,
+            VulOkA = GestorDeRede.Instancia.VulOkA,
+            VulOkB = GestorDeRede.Instancia.VulOkB,
+            InicialOk = GestorDeRede.Instancia.InicialOk,
             Placar01Det = GestorDeRede.Instancia.Placar01Det,
             Placar02Det = GestorDeRede.Instancia.Placar02Det,
             Placar01 = GestorDeRede.Instancia.Placar01,
@@ -1544,24 +1571,30 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
     public void GetGameRecall(string sala, int actorNumberVer = 0, string saveGameVer = "")
     {
         int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
-        string saveGame;
+        string saveGame = "";
         if (actorNumberVer == 0)
         {
             if (localActor > 4)
                 return;
 
-            string fileName = Application.persistentDataPath + "/SALA_" + sala.ToUpper() + "_" + localActor.ToString().PadLeft(2, '0') + ".json";
-            if (!File.Exists(fileName))
-                return;
-            StreamReader arquivo = new StreamReader(fileName);
-            saveGame = arquivo.ReadToEnd();
-            arquivo.Close();
+            // ler dados em tabela
+            int salaParm = Convert.ToInt32(PhotonNetwork.CurrentRoom.Name.Substring(4, 2));
+            WWWForm form = new WWWForm();
+            form.AddField("sala", salaParm);
+            StartCoroutine(Post("/oapi/play/find", form, true, actorNumberVer, sala));
         }
         else
         {
             saveGame = saveGameVer;
+            photonView.RPC("GetGameRecallRPC", RpcTarget.All, saveGame, actorNumberVer);
         }
+    }
+
+    public void GetGameRecallCB(string saveGame, int actorNumberVer = 0)
+    {
         photonView.RPC("GetGameRecallRPC", RpcTarget.All, saveGame, actorNumberVer);
+        int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
+        GestorDeRede.Instancia.SetDadosRodada(localActor, 0, "recall", 1);
     }
 
     [PunRPC]
@@ -1573,13 +1606,18 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
 
         SaveGame SG = JsonConvert.DeserializeObject<SaveGame>(saveGame);
         // GestorDeRede
+        GestorDeRede.Instancia.GameIdf = SG.GameIdf;
+        GestorDeRede.Instancia.GameRodada = SG.GameRodada;
+        GestorDeRede.Instancia.VulOkA = SG.VulOkA;
+        GestorDeRede.Instancia.VulOkB = SG.VulOkB;
+        GestorDeRede.Instancia.InicialOk = SG.InicialOk;
         GestorDeRede.Instancia.Placar01Det = SG.Placar01Det;
         GestorDeRede.Instancia.Placar02Det = SG.Placar02Det;
         GestorDeRede.Instancia.Placar01 = SG.Placar01;
         GestorDeRede.Instancia.Placar02 = SG.Placar02;
         GestorDeRede.Instancia.PlacarGeral01 = SG.PlacarGeral01;
         GestorDeRede.Instancia.PlacarGeral02 = SG.PlacarGeral02;
-        GestorDeRede.Instancia.JogadorInicial = SG.JogadorInicial + 1;
+        GestorDeRede.Instancia.JogadorInicial = SG.JogadorInicial;
         if (GestorDeRede.Instancia.JogadorInicial > PhotonNetwork.PlayerList.Length)
             GestorDeRede.Instancia.JogadorInicial = 1;
         GestorDeRede.Instancia.PrimeiraJogada = SG.PrimeiraJogada;
@@ -1594,6 +1632,9 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         GestorDeRede.Instancia.HoraInicio = SG.HoraInicio;
         // GameCardsManager        
         _mapaJogo = SG.MapaJogo;
+        _mapaJogo.seqJogadorAtual += 1;
+        if (_mapaJogo.seqJogadorAtual > 4)
+            _mapaJogo.seqJogadorAtual = 1;
         _jogadaFinalizada = SG.JogadaFinalizada;
 
         #region jogador
@@ -1626,11 +1667,76 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
     }
     #endregion recall
 
+
+    #region servico
+    private IEnumerator Post(string servico, WWWForm dados, bool ret, int actorNumberVer, string sala)
+    {
+        // Request and wait for the desired page.
+        UnityWebRequest webRequest = UnityWebRequest.Post(GestorDeRede.urlService + servico, dados);
+        yield return webRequest.SendWebRequest();
+
+        string[] pages = servico.Split('/');
+        int page = pages.Length - 1;
+        bool erro = false;
+        switch (webRequest.result)
+        {
+            case UnityWebRequest.Result.ConnectionError:
+            case UnityWebRequest.Result.DataProcessingError:
+                //Debug.LogError(pages[page] + ": Error: " + webRequest.error);
+                erro = true;
+                break;
+            case UnityWebRequest.Result.ProtocolError:
+                //Debug.LogError(pages[page] + ": HTTP Error: " + webRequest.error);
+                erro = true;
+                break;
+            case UnityWebRequest.Result.Success:
+                //Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
+                if (ret)
+                {
+                    FileSave fs = JsonConvert.DeserializeObject<FileSave>(webRequest.downloadHandler.text);
+                    this.GetGameRecallCB(fs.dados, actorNumberVer);
+                    Baralho.Instancia.GerarCartasCB();
+                }
+                break;
+        }
+        if (erro)
+        {
+            int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
+            string fileName = Application.persistentDataPath + "/SALA_" + sala.ToUpper() + "_" + localActor.ToString().PadLeft(2, '0') + ".json";
+            if (File.Exists(fileName))
+            {
+                StreamReader arquivo = new StreamReader(fileName);
+                string saveGame = arquivo.ReadToEnd();
+                arquivo.Close();
+                photonView.RPC("GetGameRecallRPC", RpcTarget.All, saveGame, actorNumberVer);
+            }
+        }
+    }
+    #endregion servico
+
     #region Classe Entidades
+    [Serializable]
+    public class FileSave
+    {
+        public int sala { get; set; }
+        public string dados { get; set; }
+        public int jogador { get; set; }
+    }
+    //[Serializable]
+    //public class FileRead
+    //{
+    //    public int sala { get; set; }
+    //}
+
     [Serializable]
     public class SaveGame
     {
         // GestorDeRede
+        public int GameIdf { get; set; }
+        public int GameRodada { get; set; }
+        public bool VulOkA { get; set; }
+        public bool VulOkB { get; set; }
+        public int InicialOk { get; set; }
         public string Placar01Det { get; set; }
         public string Placar02Det { get; set; }
         public int Placar01 { get; set; }

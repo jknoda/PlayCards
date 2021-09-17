@@ -2,9 +2,11 @@ using Newtonsoft.Json;
 using Photon.Pun;
 using Photon.Realtime;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 public class GestorDeRede : MonoBehaviourPunCallbacks
@@ -23,6 +25,14 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     [SerializeField]
     private Dropdown _dropdownSala;
 
+    public const string urlService = "https://jknoda-b.herokuapp.com";
+    //public const string urlService = "localhost:3003";
+
+    public int GameIdf { get; set; }
+    public int GameRodada { get; set; }
+    public bool VulOkA { get; set; }
+    public bool VulOkB { get; set; }
+    public int InicialOk { get; set; }
     public string Placar01Det { get; set; }
     public string Placar02Det { get; set; }
     public int Placar01 { get; set; }
@@ -64,7 +74,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         }
         else
         {
-            Versao = "Versão 3.5a";
+            Versao = "Versão 3.6";
             BotDebug = false; //// true = mostra as cartas do bot
 
             HoraInicio = DateTime.Now;
@@ -72,11 +82,16 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
 
             LixoBaguncado = true;
 
-            Placar01 = 0; 
+            Placar01 = 0;
             Placar02 = 0;
 
             PlacarGeral01 = 0;
             PlacarGeral02 = 0;
+
+            // Gravar registro para estatistica
+            GameIdf = 0;
+            GameRodada = 0;
+            InicialOk = 0;
 
             Placar01Det = "";
             Placar02Det = "";
@@ -157,6 +172,22 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     public string GetNomeSala()
     {
         return PhotonNetwork.CurrentRoom.Name;
+    }
+
+    public int GetAvatarNumber(int actorNumber)
+    {
+        int avatar;
+        if (actorNumber > 4)
+            actorNumber = 4;
+        try
+        {
+            avatar = (int)PhotonNetwork.PlayerList[actorNumber - 1].CustomProperties["Avatar"];
+        }
+        catch
+        {
+            avatar = AvatarJogadores[actorNumber - 1];
+        }
+        return avatar;
     }
 
     public string GetAvatar(int actorNumber, bool recall)
@@ -402,7 +433,9 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
             if (first)
             {
                 if (_carregaSN.text.ToUpper() == "S")
+                {
                     photonView.RPC("SetRecall", RpcTarget.All, true);
+                }
                 else
                     photonView.RPC("SetRecall", RpcTarget.All, false);
                 int parceiroDo1;
@@ -420,12 +453,94 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
                     }
                 }
                 photonView.RPC("AjustaDuplaRPC", RpcTarget.All, parceiroDo1);
+                if (_carregaSN.text.ToUpper() != "S" && DonoDaSala() && GameIdf == 0)
+                {
+                    CriarGame(localActor);
+                }
             }
             else
+            {
                 RodadaDeRecall = false;
+            }
             photonView.RPC("ComecaJogoRPC", RpcTarget.All, nomeCena);
         }
     }
+
+    public void CriarGame(int actorNumber)
+    {
+        // criar controle de jogo
+        int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
+        if (actorNumber > 0 && actorNumber != localActor)
+            return;
+        WWWForm form = new WWWForm();
+        form.AddField("criador", actorNumber);
+        form.AddField("sala", GetNomeSala());
+        form.AddField("ava01", GetAvatarNumber(Dupla01.Item1));
+        form.AddField("ava02", GetAvatarNumber(Dupla01.Item2));
+        form.AddField("avb01", GetAvatarNumber(Dupla02.Item1));
+        form.AddField("avb02", GetAvatarNumber(Dupla02.Item2));
+        form.AddField("joga01", GetNome(Dupla01.Item1));
+        form.AddField("joga02", GetNome(Dupla01.Item2));
+        form.AddField("jogb01", GetNome(Dupla02.Item1));
+        form.AddField("jogb02", GetNome(Dupla02.Item2));
+        StartCoroutine(PostGestorRede("/oapi/playctrl/create", actorNumber, form, 1));
+    }
+    public void CriarRodada(int actorNumber = 0)
+    {
+        int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
+        if (actorNumber > 0 && actorNumber != localActor)
+            return;
+        photonView.RPC("SetVulOkRPC", RpcTarget.All, 1, false);
+        photonView.RPC("SetVulOkRPC", RpcTarget.All, 2, false);
+        GameRodada++;
+        WWWForm form = new WWWForm();
+        form.AddField("idf", GameIdf);
+        form.AddField("rodada", GameRodada);
+        StartCoroutine(PostGestorRede("/oapi/playctrlstat/create", localActor, form, 2));
+    }
+
+    public void SetFimRodada(int actorNumber, string obs)
+    {
+        int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
+        if (actorNumber != localActor)
+            return;
+        var placar = GameCardsManager.Instancia.GetPlacar();
+        WWWForm form = new WWWForm();
+        form.AddField("idf", GameIdf);
+        form.AddField("inicial", InicialOk);
+        form.AddField("placara", placar.Item1);
+        form.AddField("placarb", placar.Item2);
+        form.AddField("obs", obs);
+        StartCoroutine(PostGestorRede("/oapi/playctrl/end", localActor, form, 4));
+
+    }
+    public void SetDadosRodada(int actorNumber, int dupla, string tipo, int valorSoma)
+    {
+        int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
+        if (localActor != actorNumber)
+            return;
+        string cDupla = dupla == 1 ? "a" : dupla == 0 ? "" : "b";
+        WWWForm form = new WWWForm();
+        form.AddField("idf", GameIdf);
+        form.AddField("rodada", GameRodada);
+        form.AddField("dupla", cDupla);
+        form.AddField("tipo", tipo);
+        form.AddField("valor", valorSoma);
+        StartCoroutine(PostGestorRede("/oapi/playctrlstat/update", localActor, form, 3));
+    }
+
+    private string GetNome(int actorNumber)
+    {
+        string nome = "";
+        int nQdePlayer = PhotonNetwork.PlayerList.Length;
+        for (int i = 0; i < nQdePlayer; i++)
+        {
+            if (PhotonNetwork.PlayerList[i].ActorNumber == actorNumber)
+                nome = PhotonNetwork.PlayerList[i].NickName;
+        }
+        return nome.Trim();
+    }
+
     [PunRPC]
     private void ComecaJogoRPC(string nomeCena)
     {
@@ -582,10 +697,10 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
 
     public void DesligarConvidados()
     {
-        photonView.RPC("DelisgarRPC", RpcTarget.All);
+        photonView.RPC("DesligarRPC", RpcTarget.All);
     }
     [PunRPC]
-    private void DelisgarRPC()
+    private void DesligarRPC()
     {
         if (PhotonNetwork.LocalPlayer.ActorNumber > 4)
         {
@@ -605,6 +720,91 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     {
         LixoBaguncado = valor;
     }
+
+    public void SetGameIdf(int valor)
+    {
+        photonView.RPC("SetGameIdfRPC", RpcTarget.All, valor);
+    }
+    [PunRPC]
+    private void SetGameIdfRPC(int valor)
+    {
+        GameIdf = valor;
+    }
+
+    public void SetGameRodada(int valor)
+    {
+        photonView.RPC("SetGameRodadaRPC", RpcTarget.All, valor);
+    }
+    [PunRPC]
+    private void SetGameRodadaRPC(int valor)
+    {
+        GameRodada = valor;
+    }
+    public void SetVulOk(int dupla, int actorNumber, int pontos, bool valor)
+    {
+        photonView.RPC("SetVulOkRPC", RpcTarget.All, dupla, valor);
+        Instancia.SetDadosRodada(actorNumber, GameCardsManager.Instancia.GetDupla(actorNumber), "vul", actorNumber);
+        Instancia.SetDadosRodada(actorNumber, GameCardsManager.Instancia.GetDupla(actorNumber), "vulpto", pontos);
+    }
+    [PunRPC]
+    private void SetVulOkRPC(int dupla, bool valor)
+    {
+        if (dupla == 1)
+            VulOkA = valor;
+        else
+            VulOkB = valor;
+    }
+    public void SetInicialOk(int valor)
+    {
+        photonView.RPC("SetInicialOkRPC", RpcTarget.All, valor);
+    }
+    [PunRPC]
+    private void SetInicialOkRPC(int valor)
+    {
+        InicialOk = valor;
+    }
+
+    #region servico
+    private IEnumerator PostGestorRede(string servico, int actorNumber, WWWForm dados, int controle)
+    {
+        if (controle == 4)
+        {
+            //GameIdf = 0;
+            //GameRodada = 0;
+            //InicialOk = 0;
+            SetGameIdf(0);
+            SetGameRodada(0);
+            SetInicialOk(0);
+        }
+        // Request and wait for the desired page.
+        UnityWebRequest webRequest = UnityWebRequest.Post(urlService + servico, dados);
+        yield return webRequest.SendWebRequest();
+        switch (webRequest.result)
+        {
+            case UnityWebRequest.Result.ConnectionError:
+            case UnityWebRequest.Result.DataProcessingError:
+                break;
+            case UnityWebRequest.Result.ProtocolError:
+                break;
+            case UnityWebRequest.Result.Success:
+                switch (controle)
+                {
+                    case 1: // Inicio da rodada
+                        GameIdf = Convert.ToInt32(webRequest.downloadHandler.text);
+                        SetGameIdf(GameIdf);
+                        SetGameRodada(0);
+                        CriarRodada();
+                        break;
+                    case 2: // dados da rodada
+                        SetGameRodada(GameRodada);
+                        break;
+                }
+                break;
+        }
+    }
+    #endregion servico
+
+
 
     [Serializable]
     public class Statistic

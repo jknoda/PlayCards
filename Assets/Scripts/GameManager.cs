@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        _qdeCutucar = UnityEngine.Random.Range(3, 7);
+        _qdeCutucar = UnityEngine.Random.Range(2, 5);
         if (!GestorDeRede.Instancia.SoVer)
         {
             int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"]; // PhotonNetwork.LocalPlayer.ActorNumber;
@@ -120,6 +120,11 @@ public class GameManager : MonoBehaviourPunCallbacks
                 avatar = GestorDeRede.Instancia.GetAvatar(actorNumber, true);
             jogador.InicializaRPCCPL(PhotonNetwork.PlayerList[actorNumber - 1], avatar);
         }
+    }
+
+    public float GetCutucadas()
+    {
+        return _qdeCutucar;
     }
 
     public Tuple<Transform, int> Spawn(int meuId, int Id)
@@ -327,6 +332,9 @@ public class GameManager : MonoBehaviourPunCallbacks
             }
             else
             {
+                int nlimite = UnityEngine.Random.Range(6, 9);
+                if (_qdeCutucar > nlimite)
+                    _qdeCutucar = nlimite;
                 GameManager.Instancia.MostraMsgMain("Cutucadas restantes: " + Math.Truncate(_qdeCutucar).ToString().PadLeft(2, '0'), false, "cutucar", false, 0, true);
             }
         }
@@ -342,6 +350,12 @@ public class GameManager : MonoBehaviourPunCallbacks
             _qdeCutucar += qde;
             if (_qdeCutucar < 0)
                 _qdeCutucar = 0;
+            else
+            {
+                int nlimite = UnityEngine.Random.Range(6, 9);
+                if (_qdeCutucar > nlimite)
+                    _qdeCutucar = nlimite;
+            }
         }
     }
 }

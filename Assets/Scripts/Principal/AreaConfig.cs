@@ -137,7 +137,7 @@ public class AreaConfig : MonoBehaviourPunCallbacks
                 visita = "Visitante: " + visita;
             msg += "\n\n" + visita;
         }
-
+        msg += "\n\n" + "Cutucadas restantes: " + Math.Truncate(GameManager.Instancia.GetCutucadas()).ToString().PadLeft(2, '0');
         Tuple<int, int> dupla;
         if (minhaDupla == 1)
             dupla = GestorDeRede.Instancia.Dupla01;
