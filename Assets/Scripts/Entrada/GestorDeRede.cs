@@ -25,7 +25,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     [SerializeField]
     private Dropdown _dropdownSala;
 
-    public const string urlService = "https://jknoda-b.herokuapp.com";
+    public const string urlService = "https://playcardservice.herokuapp.com";
     //public const string urlService = "localhost:3003";
 
     public int GameIdf { get; set; }
@@ -74,7 +74,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         }
         else
         {
-            Versao = "Versão 3.6";
+            Versao = "Versão 3.6a";
             BotDebug = false; //// true = mostra as cartas do bot
 
             HoraInicio = DateTime.Now;
