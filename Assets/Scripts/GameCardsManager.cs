@@ -1436,6 +1436,8 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         StreamWriter arquivo = new StreamWriter(fileName);
         arquivo.WriteLine(saveGame);
         arquivo.Close();
+        if (GestorDeRede.Instancia.CtrlRecallFront)
+            GestorDeRede.Instancia.CtrlRecallFront = false;
     }
 
     private string SetGameRecallCPL(int actorNumber, bool ver)

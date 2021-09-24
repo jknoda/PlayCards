@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        _qdeCutucar = UnityEngine.Random.Range(2, 5);
+        _qdeCutucar = UnityEngine.Random.Range(4, 8);
         if (!GestorDeRede.Instancia.SoVer)
         {
             int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"]; // PhotonNetwork.LocalPlayer.ActorNumber;
