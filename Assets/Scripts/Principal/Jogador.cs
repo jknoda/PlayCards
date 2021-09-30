@@ -193,6 +193,7 @@ public class Jogador : MonoBehaviourPunCallbacks //, IPointerDownHandler
                     GameCardsManager.Instancia.SetCoringa(idCarta, false);
                     GameCardsManager.Instancia.SetCoringaProvisorio(idCarta, false);
                     GameCardsManager.Instancia.SetNeutro2(idCarta, false);
+                    GameCardsManager.Instancia.SetLixo(idCarta, false);
                 }
                 if (cartaCtrl.Valor == 14) 
                 {
