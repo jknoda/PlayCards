@@ -1493,7 +1493,10 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
                 {
                     int avatar = GestorDeRede.Instancia.AvatarJogadores[playerActorNumber - 1];
                     if (avatar != -1)
+                    {
                         GestorDeRede.Instancia.SetAvatar(playerActorNumber, avatar);
+                        SG.AvatarJogadores[playerActorNumber - 1] = avatar;
+                    }
                 }
             }
         }
@@ -1651,7 +1654,8 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
                 GameObject jogadorPlayer = GameObject.FindGameObjectWithTag(tagPlayer);
                 if (jogadorPlayer != null)
                 {
-                    string avatar = GestorDeRede.Instancia.GetAvatar(playerActorNumber, true); // player.ActorNumber, true);
+                    string avatar = SG.AvatarJogadores[playerActorNumber - 1].ToString().PadLeft(2,'0');
+                    //string avatar = GestorDeRede.Instancia.GetAvatar(playerActorNumber, true); // player.ActorNumber, true);
                     jogadorPlayer.GetComponent<Image>().sprite = Resources.Load<Sprite>(avatar);
                     jogadorPlayer.transform.Find("Nome").GetComponent<Text>().text = SG.NickName[playerActorNumber - 1];
                     player.NickName = SG.NickName[playerActorNumber - 1];

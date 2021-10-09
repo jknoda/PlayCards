@@ -258,7 +258,7 @@ public class GameManager : MonoBehaviourPunCallbacks
             clickTexto.text = "";
         if (!GameManager.Instancia.ZoomOn)
         {
-            txtWH.text = GestorDeRede.Instancia.GetNomeSala(); // msg;
+            txtWH.text = GestorDeRede.Instancia.GetNomeSala() + " ... " + GestorDeRede.Instancia.Versao; // msg;
         }
         painelMsgAtivo = true;
     }
