@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using Photon.Pun;
 using Photon.Realtime;
 using System;
@@ -1527,7 +1526,7 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         SG.QdeCartasNoLixo = jogador.GetComponent<Jogador>().QdeCartasNoLixo;
         SG.UltimaJogada = jogador.GetComponent<Jogador>().UltimaJogada;
 
-        string saveGame = JsonConvert.SerializeObject(SG);
+        string saveGame = JsonUtility.ToJson(SG); // JsonConvert.SerializeObject(SG);
         return saveGame;
     }
 
@@ -1609,7 +1608,17 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         if (actorNumberVer != 0 && actorNumberVer != localActor)
             return;
 
-        SaveGame SG = JsonConvert.DeserializeObject<SaveGame>(saveGame);
+        SaveGame SG = JsonUtility.FromJson<SaveGame>(saveGame); // JsonConvert.DeserializeObject<SaveGame>(saveGame);
+        string fileName = Application.persistentDataPath + "/SALA_" + PhotonNetwork.CurrentRoom.Name.ToUpper() + "_" + localActor.ToString().PadLeft(2, '0') + ".json";
+        if (File.Exists(fileName))
+        {
+            string saveGameAux;
+            StreamReader arquivo = new StreamReader(fileName);
+            saveGameAux = arquivo.ReadToEnd();
+            arquivo.Close();
+            SaveGame SGAux = JsonUtility.FromJson<SaveGame>(saveGameAux); //JsonConvert.DeserializeObject<SaveGame>(saveGame);
+            SG.AvatarJogadores = SGAux.AvatarJogadores;
+        }
         // GestorDeRede
         GestorDeRede.Instancia.GameIdf = SG.GameIdf;
         GestorDeRede.Instancia.GameRodada = SG.GameRodada;
@@ -1699,7 +1708,7 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
                 //Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
                 if (ret)
                 {
-                    FileSave fs = JsonConvert.DeserializeObject<FileSave>(webRequest.downloadHandler.text);
+                    FileSave fs = JsonUtility.FromJson<FileSave>(webRequest.downloadHandler.text); // JsonConvert.DeserializeObject<FileSave>(webRequest.downloadHandler.text);
                     this.GetGameRecallCB(fs.dados, actorNumberVer);
                     Baralho.Instancia.GerarCartasCB();
                 }

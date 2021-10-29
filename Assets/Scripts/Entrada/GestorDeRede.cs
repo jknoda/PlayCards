@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using Photon.Pun;
 using Photon.Realtime;
 using System;
@@ -75,7 +74,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         }
         else
         {
-            Versao = "Versão 3.9";
+            Versao = "Versão 4.0";
             BotDebug = false; //// true = mostra as cartas do bot
 
             HoraInicio = DateTime.Now;
@@ -272,7 +271,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         st.UltimoJogo = DateTime.Now;
         st.UltimoPlacar01 = GameCardsManager.Instancia.GetNomeDupla(1).PadRight(15, '.') + ": " + Placar01.ToString();
         st.UltimoPlacar02 = GameCardsManager.Instancia.GetNomeDupla(2).PadRight(15, '.') + ": " + Placar02.ToString();
-        string saveStatic = JsonConvert.SerializeObject(st);
+        string saveStatic = JsonUtility.ToJson(st); //JsonConvert.SerializeObject(st);
         string fileName = GetStatisticFile();
         StreamWriter arquivo = new StreamWriter(fileName);
         arquivo.WriteLine(saveStatic);
@@ -287,7 +286,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         StreamReader arquivo = new StreamReader(fileName);
         string saveStatic = arquivo.ReadToEnd();
         arquivo.Close();
-        Statistic st = JsonConvert.DeserializeObject<Statistic>(saveStatic);
+        Statistic st = JsonUtility.FromJson<Statistic>(saveStatic); // JsonUtility.ToJson(saveStatic); //JsonConvert.DeserializeObject<Statistic>(saveStatic);
         return st;
     }
 

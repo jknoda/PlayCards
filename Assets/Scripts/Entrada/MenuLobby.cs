@@ -1,4 +1,3 @@
-using Newtonsoft.Json.Linq;
 using Photon.Pun;
 using System.IO;
 using UnityEngine;
@@ -45,12 +44,11 @@ public class MenuLobby : MonoBehaviourPunCallbacks
                 string saveGame = arquivo.ReadToEnd();
                 arquivo.Close();
 
-                JObject rss = JObject.Parse(saveGame);
-                JArray nickArray = (JArray)rss["NickName"];
+                GameCardsManager.SaveGame SG = JsonUtility.FromJson<GameCardsManager.SaveGame>(saveGame); 
                 _txtNickNames.text = "";
-                foreach (var item in nickArray)
+                foreach (string item in SG.NickName)
                 {
-                    _txtNickNames.text += (_txtNickNames.text.Length > 0 ? " / " : "") + (string)item;
+                    _txtNickNames.text += (_txtNickNames.text.Length > 0 ? " / " : "") + item;
                 }
             }
             else
