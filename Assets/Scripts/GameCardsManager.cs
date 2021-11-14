@@ -1436,6 +1436,8 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         StreamWriter arquivo = new StreamWriter(fileName);
         arquivo.WriteLine(saveGame);
         arquivo.Close();
+        if (GestorDeRede.Instancia.CtrlRecallFront)
+            GestorDeRede.Instancia.CtrlRecallFront = false;
     }
 
     private string SetGameRecallCPL(int actorNumber, bool ver)
@@ -1491,7 +1493,10 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
                 {
                     int avatar = GestorDeRede.Instancia.AvatarJogadores[playerActorNumber - 1];
                     if (avatar != -1)
+                    {
                         GestorDeRede.Instancia.SetAvatar(playerActorNumber, avatar);
+                        SG.AvatarJogadores[playerActorNumber - 1] = avatar;
+                    }
                 }
             }
         }
@@ -1577,17 +1582,30 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
             if (localActor > 4)
                 return;
 
-            // ler dados em tabela
-            int salaParm = Convert.ToInt32(PhotonNetwork.CurrentRoom.Name.Substring(4, 2));
-            WWWForm form = new WWWForm();
-            form.AddField("sala", salaParm);
-            StartCoroutine(Post("/oapi/play/find", form, true, actorNumberVer, sala));
+            // Ler JSON
+            string fileName = Application.persistentDataPath + "/SALA_" + sala.ToUpper() + "_" + localActor.ToString().PadLeft(2, '0') + ".json";
+            if (!File.Exists(fileName))
+                return;
+            StreamReader arquivo = new StreamReader(fileName);
+            saveGame = arquivo.ReadToEnd();
+            arquivo.Close();
+            this.GetGameRecallCB(saveGame, actorNumberVer);
+            Baralho.Instancia.GerarCartasCB();
+            // Fim Ler JSON
+
+            //// ler dados em tabela
+            //int salaParm = Convert.ToInt32(PhotonNetwork.CurrentRoom.Name.Substring(4, 2));
+            //WWWForm form = new WWWForm();
+            //form.AddField("sala", salaParm);
+            //StartCoroutine(Post("/oapi/play/find", form, true, actorNumberVer, sala));
+            //// Fim ler dados em tabela
         }
         else
         {
             saveGame = saveGameVer;
-            photonView.RPC("GetGameRecallRPC", RpcTarget.All, saveGame, actorNumberVer);
+            //photonView.RPC("GetGameRecallRPC", RpcTarget.All, saveGame, actorNumberVer); // Ler tabela
         }
+        photonView.RPC("GetGameRecallRPC", RpcTarget.All, saveGame, actorNumberVer); // Ler JSON
     }
 
     public void GetGameRecallCB(string saveGame, int actorNumberVer = 0)

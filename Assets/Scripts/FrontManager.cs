@@ -402,7 +402,8 @@ public class FrontManager : MonoBehaviourPunCallbacks
                 {
                     if (!played || trocaCanastra)
                     {
-                        GestorDeRede.Instancia.SetDadosRodada(actorNumber, GameCardsManager.Instancia.GetDupla(actorNumber), tipoCanastra.ToLower(), 1);
+                        if (!GestorDeRede.Instancia.CtrlRecallFront)
+                            GestorDeRede.Instancia.SetDadosRodada(actorNumber, GameCardsManager.Instancia.GetDupla(actorNumber), tipoCanastra.ToLower(), 1);
                     }
                     ultimaCarta.GetComponent<Carta>().MostraCarta(true); // ultimaCarta.GetComponent<Carta>().Nome);
                     if (jogadaAtual && !played)

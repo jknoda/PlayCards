@@ -505,6 +505,9 @@ public class GameRules : MonoBehaviourPunCallbacks
         jogada01 = GameCardsManager.Instancia.GetPontuacaoArea(GameCardsManager.Instancia.GetActorDupla(1));
         jogada02 = GameCardsManager.Instancia.GetPontuacaoArea(GameCardsManager.Instancia.GetActorDupla(2));
 
+        GestorDeRede.Instancia.SetDadosRodada(localActor, 1, "jogadas", jogada01);
+        GestorDeRede.Instancia.SetDadosRodada(localActor, 2, "jogadas", jogada02);
+
         int morto01 = 0, morto02 = 0;
         morto01 = GameCardsManager.Instancia.GetPegouMorto(GameCardsManager.Instancia.GetActorDupla(1)) ? 0 : 100;
         morto02 = GameCardsManager.Instancia.GetPegouMorto(GameCardsManager.Instancia.GetActorDupla(2)) ? 0 : 100;

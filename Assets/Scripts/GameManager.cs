@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        _qdeCutucar = UnityEngine.Random.Range(2, 5);
+        _qdeCutucar = UnityEngine.Random.Range(4, 7);
         if (!GestorDeRede.Instancia.SoVer)
         {
             int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"]; // PhotonNetwork.LocalPlayer.ActorNumber;
@@ -258,7 +258,7 @@ public class GameManager : MonoBehaviourPunCallbacks
             clickTexto.text = "";
         if (!GameManager.Instancia.ZoomOn)
         {
-            txtWH.text = GestorDeRede.Instancia.GetNomeSala(); // msg;
+            txtWH.text = GestorDeRede.Instancia.GetNomeSala() + " ... " + GestorDeRede.Instancia.Versao; // msg;
         }
         painelMsgAtivo = true;
     }

@@ -25,11 +25,12 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     [SerializeField]
     private Dropdown _dropdownSala;
 
-    public const string urlService = "https://jknoda-b.herokuapp.com";
+    public const string urlService = "https://playcardservice.herokuapp.com";
     //public const string urlService = "localhost:3003";
 
     public int GameIdf { get; set; }
     public int GameRodada { get; set; }
+    public bool CtrlRecallFront { get; set; }
     public bool VulOkA { get; set; }
     public bool VulOkB { get; set; }
     public int InicialOk { get; set; }
@@ -74,7 +75,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         }
         else
         {
-            Versao = "Versão 3.6";
+            Versao = "Versão 4.3a";
             BotDebug = false; //// true = mostra as cartas do bot
 
             HoraInicio = DateTime.Now;
@@ -103,6 +104,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
             Instancia = this;
             AvatarJogadores = new int[6] { -1, -1, -1, -1, -1, -1 }; //[0] = -1;
             Recall = false;
+            CtrlRecallFront = false;
             RodadaDeRecall = false;
             _carregaSN.text = "N";
             TempoChat = 15;
@@ -320,7 +322,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster()
     {
-        Debug.Log("Conexão bem sucedida!");
+        //Debug.Log("Conexão bem sucedida!");
     }
 
     //public override void OnDisconnected(DisconnectCause cause)
@@ -565,7 +567,10 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     {
         Recall = valor;
         if (valor)
+        {
+            CtrlRecallFront = true;
             RodadaDeRecall = valor;
+        }
     }
     [PunRPC]
     private void AjustaDuplaRPC(int parceiroDo1)
