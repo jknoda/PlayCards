@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using Photon.Pun;
 using System;
 using System.Collections.Generic;
@@ -2506,13 +2505,13 @@ public class BotManager : MonoBehaviourPunCallbacks
         int actorNumber = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
         if (cartasId == null || cartasId.Count <= 0 || actorNumber > 4)
             return;
-        string json = JsonConvert.SerializeObject(cartasId);
+        string json = JsonUtility.ToJson(cartasId); //JsonConvert.SerializeObject(cartasId);
         photonView.RPC("SetLixadasRPC", RpcTarget.All, actorNumber, json, lixou);
     }
     [PunRPC]
     private void SetLixadasRPC(int actoNumber, string json, bool lixou)
     {
-        List<int> cartasId = JsonConvert.DeserializeObject<List<int>>(json);
+        List<int> cartasId = JsonUtility.FromJson<List<int>>(json); // JsonConvert.DeserializeObject<List<int>>(json);
         if (GameCardsManager.Instancia.IsBot())
         {
             if (lixou)
