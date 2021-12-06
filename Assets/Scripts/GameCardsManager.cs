@@ -102,11 +102,18 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
     /// </summary>
     public void SetProximoJogarRPCIN()
     {
-        _mapaJogo.seqJogadorAtual++;
+        //_mapaJogo.seqJogadorAtual++;
+        //int nQdePlayer = PhotonNetwork.PlayerList.Length;
+        //if (nQdePlayer > 4) nQdePlayer = 4;
+        //if (_mapaJogo.seqJogadorAtual > nQdePlayer)
+        //    _mapaJogo.seqJogadorAtual = 1;
+
+        _mapaJogo.seqJogadorAtual--;
         int nQdePlayer = PhotonNetwork.PlayerList.Length;
         if (nQdePlayer > 4) nQdePlayer = 4;
-        if (_mapaJogo.seqJogadorAtual > nQdePlayer)
-            _mapaJogo.seqJogadorAtual = 1;
+        if (_mapaJogo.seqJogadorAtual <= 0)
+            _mapaJogo.seqJogadorAtual = nQdePlayer;
+
     }
     #endregion Start
 
