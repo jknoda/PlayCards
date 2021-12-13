@@ -75,7 +75,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         }
         else
         {
-            Versao = "Versão 4.4";
+            Versao = "Versão 4.5";
             BotDebug = false; //// true = mostra as cartas do bot
 
             HoraInicio = DateTime.Now;

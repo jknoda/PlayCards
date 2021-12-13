@@ -44,7 +44,8 @@ public class MenuLobby : MonoBehaviourPunCallbacks
                 string saveGame = arquivo.ReadToEnd();
                 arquivo.Close();
 
-                GameCardsManager.SaveGame SG = JsonUtility.FromJson<GameCardsManager.SaveGame>(saveGame); 
+                //GameCardsManager.SaveGame SG = JsonUtility.FromJson<GameCardsManager.SaveGame>(saveGame); 
+                GameCardsManager.SaveGame SG = JsonUtility.FromJson<GameCardsManager.SaveGame>(saveGame);
                 _txtNickNames.text = "";
                 foreach (string item in SG.NickName)
                 {
