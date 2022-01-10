@@ -75,7 +75,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         }
         else
         {
-            Versao = "Versão 4.5";
+            Versao = "Versão 4.6a";
             BotDebug = false; //// true = mostra as cartas do bot
 
             HoraInicio = DateTime.Now;
@@ -128,8 +128,6 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
             "avatar01",
             "avatar02",
             "avatar03",
-            "avatar04",
-            "avatar05",
             "avatar06",
             "avatar50",
             "avatar51",

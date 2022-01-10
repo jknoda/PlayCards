@@ -26,6 +26,9 @@ public class Jogador : MonoBehaviourPunCallbacks //, IPointerDownHandler
     public int QdeCartasNaMao { get; set; }
     public int QdeCartasNoLixo { get; set; }
     public int IdCartaLixo { get; set; } // caso tenha 1 carta no lixo
+    public int AvatarNumber { get; set; }
+
+    public bool PodeDesfazer { get; set; }
 
     /// <summary>
     /// Cartas que estavam na mão antes de descartar
@@ -80,6 +83,8 @@ public class Jogador : MonoBehaviourPunCallbacks //, IPointerDownHandler
         }
         else
         {
+            PodeDesfazer = true;
+            AvatarNumber = 0;
             InicializaJogada();
             ChatManager.Instancia.Chat(true);
         }
@@ -88,6 +93,7 @@ public class Jogador : MonoBehaviourPunCallbacks //, IPointerDownHandler
     public void InicializaJogada()
     {
         int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
+        PodeDesfazer = true;
         PuxouDoMonte = false;
         PegouLixo = false;
         Descartou = false;
@@ -195,7 +201,7 @@ public class Jogador : MonoBehaviourPunCallbacks //, IPointerDownHandler
                     GameCardsManager.Instancia.SetNeutro2(idCarta, false);
                     GameCardsManager.Instancia.SetLixo(idCarta, false);
                 }
-                if (cartaCtrl.Valor == 14) 
+                if (cartaCtrl.Valor == 14)
                 {
                     // voltar valor de AS
                     GameCardsManager.Instancia.SetValor(idCarta, 1);

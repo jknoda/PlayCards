@@ -125,6 +125,11 @@ public class MoverManager : MonoBehaviourPunCallbacks
             return;
         if (GameManager.Instancia.ZoomOn)
             return;
+        if (_objeto != null)
+        {
+            _objeto.SetActive(false);
+        }
+            
         var itemEnd = GameManager.Instancia.Spawn(-1, jogadorDestino);
         GameObject imagem = itemEnd.Item1.Find("ImageJog").gameObject;
         imagem.SetActive(true);
@@ -159,6 +164,6 @@ public class MoverManager : MonoBehaviourPunCallbacks
                 _objeto.SetActive(false);
                 _mover = false;
             }
-        }
+        }       
     }
 }

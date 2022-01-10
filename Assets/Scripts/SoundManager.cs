@@ -59,55 +59,58 @@ public class SoundManager : MonoBehaviour
         if (this.ON)
         {
             AudioClip som = Resources.Load<AudioClip>(pasta + "msgSound");
-            switch (clip)
+            switch (clip.ToUpper())
             {
-                case "msg":
+                case "MSG":
                     som = Resources.Load<AudioClip>(pasta + "msgSound");
                     break;
-                case "canastra":
+                case "CANASTRA":
                     som = Resources.Load<AudioClip>(pasta + "Canastra");
                     break;
-                case "lose":
+                case "LOSE":
                     som = Resources.Load<AudioClip>(pasta + "Lose");
                     break;
-                case "win":
+                case "WIN":
                     som = Resources.Load<AudioClip>(pasta + "Win");
                     break;
-                case "reorganizar":
+                case "REORGANIZAR":
                     som = Resources.Load<AudioClip>(pasta + "Reorganizar");
                     break;
-                case "finalizar":
+                case "FINALIZAR":
                     som = Resources.Load<AudioClip>(pasta + "Finalizar");
                     break;
-                case "selecionar":
+                case "SELECIONAR":
                     som = Resources.Load<AudioClip>(pasta + "Selecionar");
                     break;
-                case "drag":
+                case "DRAG":
                     som = Resources.Load<AudioClip>(pasta + "Drag");
                     break;
-                case "endDrag":
+                case "ENDDRAG":
                     som = Resources.Load<AudioClip>(pasta + "EndDrag");
                     break;
-                case "lixo":
+                case "LIXO":
                     som = Resources.Load<AudioClip>(pasta + "Lixo");
                     break;
-                case "asAs":
+                case "ASAS":
                     som = Resources.Load<AudioClip>(pasta + "AsAs");
                     break;
-                case "morto":
+                case "MORTO":
                     som = Resources.Load<AudioClip>(pasta + "Morto");
                     break;
-                case "suaVez":
+                case "SUAVEZ":
                     som = Resources.Load<AudioClip>(pasta + "SuaVez");
                     break;
-                case "fimRodada":
+                case "FIMRODADA":
                     som = Resources.Load<AudioClip>(pasta + "FimRodada");
                     break;
-                case "chat":
+                case "CHAT":
                     som = Resources.Load<AudioClip>(pasta + "Chat");
                     break;
-                case "cutucar":
+                case "CUTUCAR":
                     som = Resources.Load<AudioClip>(pasta + "Cutucar");
+                    break;
+                case "HUMOR":
+                    som = Resources.Load<AudioClip>(pasta + "Humor");
                     break;
             }
             audioSrc.PlayOneShot(som);

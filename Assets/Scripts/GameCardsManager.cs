@@ -946,6 +946,7 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"]; // 
         if (localActor > 4)
             return;
+        GameCardsManager.Instancia.MsgMsg("", 0);
         SoundManager.Instancia.PlaySound("reorganizar");
         string portador = GetJogador();
         if (RPC)
@@ -1359,12 +1360,56 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         Baralho.Instancia.cartas[idCarta].GetComponentInChildren<Image>().enabled = valor;
     }
 
+    private void Humor(int actor)
+    {
+        var jogador = this.GetJogadorObjeto(actor);
+        string avatar = GestorDeRede.Instancia.GetAvatar(actor, false);
+        int number = jogador.GetComponent<Jogador>().AvatarNumber;
+        number++;
+        string numAux = "";
+        if (number > 0)
+        {
+            numAux = "_" + number.ToString().PadLeft(2, '0');
+        }
+        if (Resources.Load<Sprite>(avatar + numAux) != null)
+        {
+            jogador.GetComponent<Jogador>().AvatarNumber++;
+        }
+        else
+        {
+            jogador.GetComponent<Jogador>().AvatarNumber = 0;
+            numAux = "";
+        }
+        string newAvatar = avatar + numAux;
+        jogador.GetComponent<Image>().sprite = Resources.Load<Sprite>(newAvatar);
+        photonView.RPC("HumorRPC", RpcTarget.All, actor, newAvatar);
+    }
+    [PunRPC]
+    private void HumorRPC(int actor, string avatar)
+    {
+        if (GameManager.Instancia.ZoomOn)
+            return;
+        var jogador = this.GetJogadorObjeto(actor);
+        if (Resources.Load<Sprite>(avatar) != null)
+        {
+            jogador.GetComponent<Image>().sprite = Resources.Load<Sprite>(avatar);
+            SoundManager.Instancia.PlaySound("humor");
+        }
+    }
+
     public void SetCutucar(int actorPosicao, int actorNumberAuto = 0)
     {
         int actorOrigem = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
         string nomeOrigem = PhotonNetwork.LocalPlayer.NickName;
         if (actorPosicao == 1 && actorOrigem <= 4)
+        {
+            if (actorOrigem <= 4)
+            {
+                // auto cutucou
+                this.Humor(actorOrigem);
+            }
             return;
+        }
         int actorNumber = GetActorAtPos(actorPosicao);
         if (actorNumberAuto != 0)
             actorNumber = actorNumberAuto;
@@ -1687,7 +1732,7 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
                 GameObject jogadorPlayer = GameObject.FindGameObjectWithTag(tagPlayer);
                 if (jogadorPlayer != null)
                 {
-                    string avatar = SG.AvatarJogadores[playerActorNumber - 1].ToString().PadLeft(2,'0');
+                    string avatar = SG.AvatarJogadores[playerActorNumber - 1].ToString().PadLeft(2, '0');
                     //string avatar = GestorDeRede.Instancia.GetAvatar(playerActorNumber, true); // player.ActorNumber, true);
                     jogadorPlayer.GetComponent<Image>().sprite = Resources.Load<Sprite>(avatar);
                     jogadorPlayer.transform.Find("Nome").GetComponent<Text>().text = SG.NickName[playerActorNumber - 1];

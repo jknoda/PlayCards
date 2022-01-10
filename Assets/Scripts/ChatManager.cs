@@ -3,6 +3,7 @@ using Photon.Realtime;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -92,7 +93,7 @@ public class ChatManager : MonoBehaviourPunCallbacks
         msg = msg.Trim();
         if (string.IsNullOrEmpty(msg))
             return;
-        int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"]; 
+        int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
         if (localActor > 4)
             pnMensagemConvidado.SetActive(false);
         else
@@ -108,6 +109,31 @@ public class ChatManager : MonoBehaviourPunCallbacks
         }
         photonView.RPC("SetHistor", RpcTarget.All, msg, localActor);
         BotManager.Instancia.LerMsg(msg, localActor);
+        this.Interpretar(msg);
+    }
+
+    private void Interpretar(string msg)
+    {
+        int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"]; // 
+        if (localActor > 4)
+            return;
+
+        string msgAux = msg.Replace(" ", ",").ToUpper() + "   ";
+        List<string> palavras = msgAux.Split(',').ToList();
+        if (palavras.Any(x => x.Contains("DESFAZER")))
+        {
+            // desfazer jogada
+            GameObject jogador = GameCardsManager.Instancia.GetJogadorObjeto();
+            if (jogador.GetComponent<Jogador>().PodeDesfazer)
+            {
+                GameRules.Instancia.DesfazerUltimaJogada(jogador);
+                jogador.GetComponent<Jogador>().PodeDesfazer = false;
+            }
+            else
+            {
+                GameCardsManager.Instancia.MsgMsg("Não pode mais desfazer a jogada", 0);
+            }
+        }
     }
 
     [PunRPC]
