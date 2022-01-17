@@ -101,7 +101,8 @@ public class Baralho : MonoBehaviourPunCallbacks
     public void GerarCartasCB()
     {
         ListaCartas baralho = GerarCartasRecall();
-        GestorDeRede.Instancia.Recall = false;
+        //GestorDeRede.Instancia.Recall = false;
+        photonView.RPC("ZerarRecall", RpcTarget.All);
         this.cartasAPI = JsonUtility.ToJson(baralho);
         GerarBaralho(this.cartasAPI, true);
     }
@@ -259,6 +260,13 @@ public class Baralho : MonoBehaviourPunCallbacks
             return;
         GerarBaralhoBuracoCPL(baralhoJson, recall);
     }
+
+    [PunRPC]
+    private void ZerarRecall()
+    {
+        GestorDeRede.Instancia.Recall = false;
+    }
+
 
     private void GerarBaralhoBuracoCPL(string baralhoJson, bool recall)
     {

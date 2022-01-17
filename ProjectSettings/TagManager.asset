@@ -29,6 +29,7 @@ TagManager:
   - CHATESQUERDABAIXO
   - CHATVIEW
   - MESA
+  - CENTRO
   layers:
   - Default
   - TransparentFX

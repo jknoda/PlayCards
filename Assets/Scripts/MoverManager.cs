@@ -113,6 +113,38 @@ public class MoverManager : MonoBehaviourPunCallbacks
         FrontManager.Instancia.lixoLista.Clear();
     }
 
+    public void MoverHumor(int jogadorOrigem, string avatar)
+    {
+        photonView.RPC("MoverHumorRPC", RpcTarget.All, jogadorOrigem, avatar);
+    }
+    [PunRPC]
+    private void MoverHumorRPC(int jogadorOrigem, string avatar)
+    {
+        if (GameManager.Instancia.ZoomOn)
+            return;
+        if (_objeto != null)
+        {
+            _objeto.SetActive(false);
+        }
+
+        var itemEnd = GameManager.Instancia.Spawn(-1, jogadorOrigem);
+        GameObject imagem = itemEnd.Item1.Find("ImageJog").gameObject;
+        imagem.GetComponent<Image>().sprite = Resources.Load<Sprite>(avatar);
+        imagem.SetActive(true);
+        Color cor = imagem.GetComponent<Image>().color;
+        imagem.GetComponent<Image>().color = new Color(cor.r, cor.g, cor.b, 0.5f);
+        imagem.GetComponent<Image>().transform.localScale = new Vector3(2, 2, 2);
+        _startTime = Time.time;
+        _endMarker = GameObject.FindGameObjectWithTag("CENTRO").transform.position;
+        GameObject jogador = GameObject.FindGameObjectWithTag(tag);
+        var itemStart = GameManager.Instancia.Spawn(-1, jogadorOrigem);
+        _startMarker = itemStart.Item1.position;
+        _journeyLength = Vector3.Distance(_startMarker, _endMarker);
+        _speed = (_speedInicial / 1.5f) * _journeyLength / _distPadrao;
+        _mover = true;
+        _objeto = imagem;
+    }
+
     public void MoverJogador(int jogadorOrigem, int jogadorDestino)
     {
         photonView.RPC("MoverJogadorRPC", RpcTarget.All, jogadorOrigem, jogadorDestino);
@@ -129,7 +161,7 @@ public class MoverManager : MonoBehaviourPunCallbacks
         {
             _objeto.SetActive(false);
         }
-            
+
         var itemEnd = GameManager.Instancia.Spawn(-1, jogadorDestino);
         GameObject imagem = itemEnd.Item1.Find("ImageJog").gameObject;
         imagem.SetActive(true);
@@ -162,8 +194,16 @@ public class MoverManager : MonoBehaviourPunCallbacks
             {
                 //_objMover.SetActive(false);
                 _objeto.SetActive(false);
+                photonView.RPC("DesativarMoveRPC", RpcTarget.All);
                 _mover = false;
             }
-        }       
+        }
     }
+    [PunRPC]
+    private void DesativarMoveRPC()
+    {
+        _objeto.SetActive(false);
+        _mover = false;
+    }
+
 }

@@ -1394,6 +1394,7 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         {
             jogador.GetComponent<Image>().sprite = Resources.Load<Sprite>(avatar);
             SoundManager.Instancia.PlaySound("humor");
+            MoverManager.Instancia.MoverHumor(actor, avatar);
         }
     }
 
@@ -1715,9 +1716,12 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         GestorDeRede.Instancia.HoraInicio = SG.HoraInicio;
         // GameCardsManager        
         _mapaJogo = SG.MapaJogo;
-        _mapaJogo.seqJogadorAtual += 1;
-        if (_mapaJogo.seqJogadorAtual > 4)
-            _mapaJogo.seqJogadorAtual = 1;
+        //_mapaJogo.seqJogadorAtual += 1;
+        //if (_mapaJogo.seqJogadorAtual > 4)
+        //    _mapaJogo.seqJogadorAtual = 1;
+        _mapaJogo.seqJogadorAtual -= 1;
+        if (_mapaJogo.seqJogadorAtual <= 0)
+            _mapaJogo.seqJogadorAtual = 4;
         _jogadaFinalizada = SG.JogadaFinalizada;
 
         #region jogador
