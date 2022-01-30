@@ -312,9 +312,10 @@ public class GameRules : MonoBehaviourPunCallbacks
         }
         if (GameCardsManager.Instancia.IsBot())
         {
-            Baralho.Instancia.LimparSelecionados();
+            //Baralho.Instancia.LimparSelecionados();
             BotManager.Instancia.desfeita = true;
         }
+        Baralho.Instancia.LimparSelecionados();
     }
 
     private void Final(int placar01, int placar02)

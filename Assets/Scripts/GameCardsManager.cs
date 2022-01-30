@@ -1360,10 +1360,12 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         Baralho.Instancia.cartas[idCarta].GetComponentInChildren<Image>().enabled = valor;
     }
 
-    private void Humor(int actor)
+    public void SetHumor()
     {
-        var jogador = this.GetJogadorObjeto(actor);
-        string avatar = GestorDeRede.Instancia.GetAvatar(actor, false);
+        int actorOrigem = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
+        // alterar avatar
+        var jogador = this.GetJogadorObjeto(actorOrigem);
+        string avatar = GestorDeRede.Instancia.GetAvatar(actorOrigem, false);
         int number = jogador.GetComponent<Jogador>().AvatarNumber;
         number++;
         string numAux = "";
@@ -1382,6 +1384,30 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         }
         string newAvatar = avatar + numAux;
         jogador.GetComponent<Image>().sprite = Resources.Load<Sprite>(newAvatar);
+    }
+
+    private void Humor(int actor)
+    {
+        var jogador = this.GetJogadorObjeto(actor);
+        string avatar = GestorDeRede.Instancia.GetAvatar(actor, false);
+        int number = jogador.GetComponent<Jogador>().AvatarNumber;
+        //number++;
+        string numAux = "";
+        if (number > 0)
+        {
+            numAux = "_" + number.ToString().PadLeft(2, '0');
+        }
+        //if (Resources.Load<Sprite>(avatar + numAux) != null)
+        //{
+        //    jogador.GetComponent<Jogador>().AvatarNumber++;
+        //}
+        //else
+        //{
+        //    jogador.GetComponent<Jogador>().AvatarNumber = 0;
+        //    numAux = "";
+        //}
+        string newAvatar = avatar + numAux;
+        jogador.GetComponent<Image>().sprite = Resources.Load<Sprite>(newAvatar);
         photonView.RPC("HumorRPC", RpcTarget.All, actor, newAvatar);
     }
     [PunRPC]
@@ -1398,7 +1424,7 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         }
     }
 
-    public void SetCutucar(int actorPosicao, int actorNumberAuto = 0)
+    public void SetCutucar(int actorPosicao, int actorNumberAuto, bool self = false)
     {
         int actorOrigem = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
         string nomeOrigem = PhotonNetwork.LocalPlayer.NickName;
@@ -1704,6 +1730,8 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         GestorDeRede.Instancia.JogadorInicial = SG.JogadorInicial;
         if (GestorDeRede.Instancia.JogadorInicial > PhotonNetwork.PlayerList.Length)
             GestorDeRede.Instancia.JogadorInicial = 1;
+        if (GestorDeRede.Instancia.JogadorInicial < 1)
+            GestorDeRede.Instancia.JogadorInicial = PhotonNetwork.PlayerList.Length;
         GestorDeRede.Instancia.PrimeiraJogada = SG.PrimeiraJogada;
         GestorDeRede.Instancia.Dupla01 = SG.Dupla01;
         GestorDeRede.Instancia.Dupla02 = SG.Dupla02;

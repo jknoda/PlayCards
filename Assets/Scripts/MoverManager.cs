@@ -17,6 +17,9 @@ public class MoverManager : MonoBehaviourPunCallbacks
     private float _journeyLength;
     private bool _mover = false;
     private GameObject _objeto;
+
+    private bool _humor = false;
+    private float _scale;
     public static MoverManager Instancia { get; private set; }
     private void Awake()
     {
@@ -33,6 +36,7 @@ public class MoverManager : MonoBehaviourPunCallbacks
     private void Start()
     {
         _mover = false;
+        _humor = false;
     }
 
     public void MoverCartas(int idCarta, int actorNumber, string portador)
@@ -120,6 +124,9 @@ public class MoverManager : MonoBehaviourPunCallbacks
     [PunRPC]
     private void MoverHumorRPC(int jogadorOrigem, string avatar)
     {
+        //int localActor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"]; // 
+        //if (localActor == jogadorOrigem)
+        //    return;
         if (GameManager.Instancia.ZoomOn)
             return;
         if (_objeto != null)
@@ -127,13 +134,15 @@ public class MoverManager : MonoBehaviourPunCallbacks
             _objeto.SetActive(false);
         }
 
+        _humor = true;
         var itemEnd = GameManager.Instancia.Spawn(-1, jogadorOrigem);
         GameObject imagem = itemEnd.Item1.Find("ImageJog").gameObject;
         imagem.GetComponent<Image>().sprite = Resources.Load<Sprite>(avatar);
         imagem.SetActive(true);
         Color cor = imagem.GetComponent<Image>().color;
         imagem.GetComponent<Image>().color = new Color(cor.r, cor.g, cor.b, 0.5f);
-        imagem.GetComponent<Image>().transform.localScale = new Vector3(2, 2, 2);
+        _scale = 0;
+        //imagem.GetComponent<Image>().transform.localScale = new Vector3(2, 2, 2);
         _startTime = Time.time;
         _endMarker = GameObject.FindGameObjectWithTag("CENTRO").transform.position;
         GameObject jogador = GameObject.FindGameObjectWithTag(tag);
@@ -189,6 +198,12 @@ public class MoverManager : MonoBehaviourPunCallbacks
 
             // Set our position as a fraction of the distance between the markers.
             //_objMover.transform.position = Vector3.Lerp(_startMarker, _endMarker, fractionOfJourney);
+            if (_humor)
+            {
+                _scale += 0.05f;
+                _objeto.GetComponent<Image>().transform.localScale = new Vector3(_scale, _scale, _scale);
+            }
+
             _objeto.transform.position = Vector3.Lerp(_startMarker, _endMarker, fractionOfJourney);
             if (fractionOfJourney >= 0.9f)
             {
@@ -196,6 +211,7 @@ public class MoverManager : MonoBehaviourPunCallbacks
                 _objeto.SetActive(false);
                 photonView.RPC("DesativarMoveRPC", RpcTarget.All);
                 _mover = false;
+                _humor = false;
             }
         }
     }

@@ -39,7 +39,7 @@ public class Menu : MonoBehaviourPunCallbacks
         else
         {
             int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
-            if (localActor > 10)
+            if (localActor > 6)
             {
                 GestorDeRede.Instancia.SalaCheia();
             }

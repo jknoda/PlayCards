@@ -75,7 +75,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         }
         else
         {
-            Versao = "Versão 4.7";
+            Versao = "Versão 4.8";
             BotDebug = false; //// true = mostra as cartas do bot
 
             HoraInicio = DateTime.Now;
@@ -546,11 +546,16 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     {
         FirstBot = true;
         PrimeiraJogada = true;
-        JogadorInicial++;
         int nQdePlayer = PhotonNetwork.PlayerList.Length;
         if (nQdePlayer > 4) nQdePlayer = 4;
-        if (JogadorInicial > nQdePlayer)
-            JogadorInicial = 1;
+        //JogadorInicial++;
+        //if (JogadorInicial > nQdePlayer)
+        //    JogadorInicial = 1;
+
+        JogadorInicial--;
+        if (JogadorInicial < 1)
+            JogadorInicial = nQdePlayer;
+
         PhotonNetwork.LoadLevel(nomeCena);
     }
 

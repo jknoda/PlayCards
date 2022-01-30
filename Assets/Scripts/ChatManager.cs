@@ -1,11 +1,8 @@
 using Photon.Pun;
-using Photon.Realtime;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class ChatManager : MonoBehaviourPunCallbacks
@@ -120,7 +117,7 @@ public class ChatManager : MonoBehaviourPunCallbacks
 
         string msgAux = msg.Replace(" ", ",").ToUpper() + "   ";
         List<string> palavras = msgAux.Split(',').ToList();
-        if (palavras.Any(x => x.Contains("DESFAZER")))
+        if (palavras.Count == 1 && palavras.Any(x => x.Contains("DESFAZER")))
         {
             // desfazer jogada
             GameObject jogador = GameCardsManager.Instancia.GetJogadorObjeto();
