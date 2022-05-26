@@ -41,6 +41,7 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         }
         else
         {
+            SetEstatistica(0, "INICIAR", 0);
             SetInicializaMapaRPCIN(true);
             SetProximoJogarRPCIN();
             MostraQuemJoga();
@@ -1475,6 +1476,58 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public void SetEstatistica(int actorNumber, string campo, int valor)
+    {
+        if (campo == "INICIAR")
+        {
+            GestorDeRede.Instancia.StatisticUsuario = new List<GameCardsManager.Estatistica>();
+            for (int i = 0; i <= 5; i++)
+            {
+                int avatar = 0;
+                if (i > 0 && i <= PhotonNetwork.PlayerList.Length)
+                {
+                    avatar = GestorDeRede.Instancia.GetAvatarNumber(i);
+                }
+                GestorDeRede.Instancia.StatisticUsuario.Add(new GameCardsManager.Estatistica()
+                {
+                    jogador = avatar,
+                    cartasBaixadas = 0,
+                    cartasLixadas = 0,
+                    cartasPuxadas = 0,
+                    pontosNaMao = 0
+
+                });
+            }
+        }
+        else
+        {
+            photonView.RPC("SetEstatisticaRPC", RpcTarget.All, actorNumber, campo, valor);
+        }
+    }
+    [PunRPC]
+    private void SetEstatisticaRPC(int actorNumber, string campo, int valor)
+    {
+        if (campo == "LIXADAS")
+            GestorDeRede.Instancia.StatisticUsuario[actorNumber].cartasLixadas += valor;
+        else if (campo == "PUXADAS")
+            GestorDeRede.Instancia.StatisticUsuario[actorNumber].cartasPuxadas += valor;
+        else if (campo == "BAIXADAS")
+            GestorDeRede.Instancia.StatisticUsuario[actorNumber].cartasBaixadas += valor;
+        else if (campo == "NAMAO")
+        {
+            int actor = (int)PhotonNetwork.LocalPlayer.CustomProperties["ID"];
+            string jogador = "JOGADOR" + actor.ToString().Trim().PadLeft(2, '0');
+            int pontos = 0;
+            GameCardsManager.Instancia.GetListaCartasJogo().Where(x => x.Portador != "MONTE").ToList().
+            ForEach(carta =>
+            {
+                // pontuação das cartas
+                if (carta.Portador == jogador) pontos += carta.Pontos;
+            });
+            GestorDeRede.Instancia.StatisticUsuario[actor].pontosNaMao += pontos;
+        }
+    }
+
     #endregion SET
 
     #region recall
@@ -1925,6 +1978,17 @@ public class GameCardsManager : MonoBehaviourPunCallbacks
         public int PesoGen; // Peso generico
         public string ctr = "";
         public bool NovoJogada = false;
+    }
+
+    [Serializable]
+    public class Estatistica
+    {
+        public int jogador { get; set; }
+        public int cartasLixadas { get; set; }
+        public int cartasPuxadas { get; set; }
+        public int cartasBaixadas { get; set; }
+        public int pontosNaMao { get; set; }
+
     }
     #endregion Classe Entidades
 }

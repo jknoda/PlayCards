@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Photon.Pun;
 using System;
 using System.Collections.Generic;
@@ -454,6 +455,7 @@ public class GameRules : MonoBehaviourPunCallbacks
         int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
         if (actorBateu != 0)
             localActor = actorBateu;
+
         GestorDeRede.Instancia.SetDadosRodada(localActor, GameCardsManager.Instancia.GetDupla(localActor), "batida", localActor);
 
         GameCardsManager.Instancia.SetJogadaFinalizada(true);
@@ -885,6 +887,7 @@ public class GameRules : MonoBehaviourPunCallbacks
                     jogador.GetComponent<Jogador>().PuxouDoMonte = true;
                     GameCardsManager.Instancia.SetColorArea(localActor);
                     gravaJogada = true;
+                    GameCardsManager.Instancia.SetEstatistica(localActor, "PUXADAS", 1);
                 }
             }
             if (ok && portadorInicioDrag == "LIXO")
@@ -896,6 +899,7 @@ public class GameRules : MonoBehaviourPunCallbacks
                     jogador.GetComponent<Jogador>().PegouLixo = true;
                     GameCardsManager.Instancia.SetColorArea(localActor);
                     gravaJogada = true;
+                    GameCardsManager.Instancia.SetEstatistica(localActor, "LIXADAS", Baralho.Instancia.cartasSel.Count);
                     BotManager.Instancia.SetLixadas(Baralho.Instancia.cartasSel, true);
                 }
             }
@@ -1137,6 +1141,7 @@ public class GameRules : MonoBehaviourPunCallbacks
         }
         else
         {
+            GameCardsManager.Instancia.SetEstatistica(localActor, "BAIXADAS", Baralho.Instancia.cartasSel.Count);
             if (gravaJogada)
                 GravarJogada(jogadorTag);
             if (GameCardsManager.Instancia.GetCartasNaMao() == 0 && !GameCardsManager.Instancia.GetJogadaFinalizada())

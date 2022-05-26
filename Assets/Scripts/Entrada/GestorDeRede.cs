@@ -26,7 +26,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     private Dropdown _dropdownSala;
 
     public const string urlService = "https://playcardservice.herokuapp.com";
-    //public const string urlService = "localhost:3003";
+    // public const string urlService = "localhost:3003";
 
     public int GameIdf { get; set; }
     public int GameRodada { get; set; }
@@ -63,7 +63,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     public string MsgHistorico { get; set; }
     public DateTime HoraInicio { get; set; }
 
-    private string StatisticUsuario { get; set; }
+    public List<GameCardsManager.Estatistica> StatisticUsuario { get; set; }
 
     public static GestorDeRede Instancia { get; private set; }
 
@@ -75,8 +75,8 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         }
         else
         {
-            Versao = "Versão 4.8";
-            BotDebug = false; //// true = mostra as cartas do bot
+            Versao = "Versão 4.9";
+            BotDebug = true;  ///// true = mostra as cartas do bot
 
             HoraInicio = DateTime.Now;
             LiberaVisita = true;
@@ -114,7 +114,6 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
             Dupla01 = new Tuple<int, int>(1, 2);
             Dupla02 = new Tuple<int, int>(3, 4);
             MsgHistorico = "";
-            StatisticUsuario = "";
             DontDestroyOnLoad(this.gameObject);
         }
     }
@@ -496,6 +495,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         WWWForm form = new WWWForm();
         form.AddField("idf", GameIdf);
         form.AddField("rodada", GameRodada);
+        form.AddField("estatistica", "");
         StartCoroutine(PostGestorRede("/oapi/playctrlstat/create", localActor, form, 2));
     }
 
@@ -520,12 +520,16 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
         if (localActor != actorNumber)
             return;
         string cDupla = dupla == 1 ? "a" : dupla == 0 ? "" : "b";
+        if (tipo.ToUpper() == "BATIDA")
+            GameCardsManager.Instancia.SetEstatistica(0, "NAMAO", 0);
+        string estatistica = JsonConvert.SerializeObject(GestorDeRede.Instancia.StatisticUsuario);
         WWWForm form = new WWWForm();
         form.AddField("idf", GameIdf);
         form.AddField("rodada", GameRodada);
         form.AddField("dupla", cDupla);
         form.AddField("tipo", tipo);
         form.AddField("valor", valorSoma);
+        form.AddField("estatistica", estatistica);
         StartCoroutine(PostGestorRede("/oapi/playctrlstat/update", localActor, form, 3));
     }
 
@@ -747,6 +751,7 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     private void SetGameRodadaRPC(int valor)
     {
         GameRodada = valor;
+
     }
     public void SetVulOk(int dupla, int actorNumber, int pontos, bool valor)
     {
@@ -771,7 +776,6 @@ public class GestorDeRede : MonoBehaviourPunCallbacks
     {
         InicialOk = valor;
     }
-
     #region servico
     private IEnumerator PostGestorRede(string servico, int actorNumber, WWWForm dados, int controle)
     {
